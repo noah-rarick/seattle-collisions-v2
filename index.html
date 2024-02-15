@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Simple Map</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.28/"></script>
+
+    <style>
+        html, body, #viewDiv {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="viewDiv"></div>
+    <script>
+        require([
+            "esri/config",
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/layers/FeatureLayer"
+        ], function(esriConfig, Map, MapView, FeatureLayer) {
+            esriConfig.apiKey = "AAPK76781a872cbc4f3586992bdb98501e2eangcJw2b7mb9HuZUOhY2gpytnsSM8fd8hV6sDjOMDBSbGdCpUA3oYKBRufAQEg4x";
+            const map = new Map({
+                basemap: "arcgis/streets-night" // You can change the basemap here.
+            });
+
+            const view = new MapView({
+                container: "viewDiv", // This is the ID of the div where the map will be rendered.
+                map: map,
+                zoom: 11, // Sets zoom level based on scale
+                center: [-122.3321, 47.6562] // Sets the center point of view in longitude,latitude
+            });
+
+            const collisions = new FeatureLayer({
+                url: "https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/SDOT_Collisions_All_Years/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
+            });
+
+            map.add(collisions);
+        })
+    </script>
+</body>
+</html>
