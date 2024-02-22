@@ -1,48 +1,86 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>Simple Map</title>
-    <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css">
-    <script src="https://js.arcgis.com/4.28/"></script>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seattle Traffic Collisions</title>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.8.1/mapbox-gl.css" rel="stylesheet">
     <style>
-        html, body, #viewDiv {
-            height: 100%;
-            width: 100%;
+        body, html {
             margin: 0;
             padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+        #sidebar {
+            width: 25%;
+            height: 100%;
+            position: fixed;
+            background-color: #343a40;
+            color: white;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        #map {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 25%;
+        }
+        .kpi {
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f2f2f2;
+            color: #000;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
-    <div id="viewDiv"></div>
-    <script>
-        require([
-            "esri/config",
-            "esri/Map",
-            "esri/views/MapView",
-            "esri/layers/FeatureLayer"
-        ], function(esriConfig, Map, MapView, FeatureLayer) {
-            esriConfig.apiKey = "AAPK76781a872cbc4f3586992bdb98501e2eangcJw2b7mb9HuZUOhY2gpytnsSM8fd8hV6sDjOMDBSbGdCpUA3oYKBRufAQEg4x";
-            const map = new Map({
-                basemap: "arcgis/streets-night" // You can change the basemap here.
-            });
 
-            const view = new MapView({
-                container: "viewDiv", // This is the ID of the div where the map will be rendered.
-                map: map,
-                zoom: 11, // Sets zoom level based on scale
-                center: [-122.3321, 47.6562] // Sets the center point of view in longitude,latitude
-            });
+<div id="sidebar">
+    <h1>Analytics Panel</h1>
+    <div class="kpi" id="total-fatalities">Total Fatalities: Loading...</div>
+    <!-- Placeholder for other KPIs -->
+</div>
 
-            const collisions = new FeatureLayer({
-                url: "https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/SDOT_Collisions_All_Years/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
-            });
+<div id="map"></div>
 
-            map.add(collisions);
-        })
-    </script>
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.8.1/mapbox-gl.js"></script>
+<script>
+    // This is Mars Mapbox token
+    mapboxgl.accessToken = 'pk.eyJ1Ijoiem91eWFuZzEwMjYiLCJhIjoiY2xzaWxvcHhhMWZlNDJpcGpjZ2Y3anVtZiJ9.5QC-TrmUDxO7NBxpXGIKvA';
+
+    // Initialize the map
+    const map = new mapboxgl.Map({
+        container: 'map', 
+        style: 'mapbox://styles/mapbox/dark-v10', // style URL
+        center: [-122.335167, 47.608013], //  seattle
+        zoom: 10 
+    });
+
+    // Add zoom and rotation controls to the map
+    map.addControl(new mapboxgl.NavigationControl());
+
+    // Function to fetch and display total fatalities
+    async function updateTotalFatalities() {
+        const bounds = map.getBounds();
+        // Add a timestamp to the query to avoid caching
+        const query = `https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/SDOT_Collisions_All_Years/FeatureServer/0/query?outFields=FATALITIES&where=1%3D1&geometry=${bounds.getWest()},${bounds.getSouth()},${bounds.getEast()},${bounds.getNorth()}&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&f=geojson&cacheBust=${Date.now()}`;
+        const response = await fetch(query);
+        const data = await response.json();
+
+        let totalFatalities = data.features.reduce((sum, feature) => sum + (feature.properties.FATALITIES || 0), 0);
+        
+        document.getElementById('total-fatalities').textContent = `Total Fatalities: ${totalFatalities}`;
+}
+
+
+    // Update the total fatalities when the map loads and when the view changes
+    map.on('load', updateTotalFatalities);
+    map.on('moveend', updateTotalFatalities);
+</script>
+
 </body>
 </html>
