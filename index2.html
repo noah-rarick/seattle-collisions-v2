@@ -25,8 +25,10 @@
             "esri/views/MapView",
             "esri/layers/FeatureLayer",
             "esri/core/reactiveUtils",
-            "esri/renderers/HeatmapRenderer"
-        ], function(esriConfig, Map, MapView, FeatureLayer, reactiveUtils, HeatmapRenderer) {
+            "esri/layers/support/FeatureReductionBinning",
+            "esri/layers/support/AggregateField",
+            "esri/layers/support/LabelClass"
+        ], function(esriConfig, Map, MapView, FeatureLayer, reactiveUtils, FeatureReductionBinning, AggregateField, LabelClass) {
             esriConfig.apiKey = "AAPK76781a872cbc4f3586992bdb98501e2eangcJw2b7mb9HuZUOhY2gpytnsSM8fd8hV6sDjOMDBSbGdCpUA3oYKBRufAQEg4x";
             const map = new Map({
                 basemap: "arcgis/streets-night" // You can change the basemap here.
@@ -49,33 +51,31 @@
 
             // Esri color ramps - Blue and Red 18
 // #00aaffff,#0060a6ff,#403e3aff,#801921ff,#d92b2bff
-            const colors = ["#00aaffff", "#0060a6ff", "#403e3aff", "#801921ff", "#d92b2bff"];
+            const colors = [
+                "rgba(0, 170, 255, .3)",
+                "rgba(0, 96, 166, .3)",
+                "rgba(64, 62, 58, .3)",
+                "rgba(128, 25, 33, .3)",
+                "rgba(217, 43, 43, .3)"
+            ];
+
 
             const heatmapRenderer = {
                 // field: "INJURIES",
                 type: "heatmap",
                 colorStops: [
-                { color: [133, 193, 200, 0], ratio: 0 },
-                { color: [133, 193, 200, 0], ratio: 0.01 },
-                { color: [133, 193, 200, 255], ratio: 0.01 },
-                { color: [133, 193, 200, 255], ratio: 0.01 },
-                { color: [144, 161, 190, 255], ratio: 0.0925 },
-                { color: [156, 129, 132, 255], ratio: 0.175 },
-                { color: [167, 97, 170, 255], ratio: 0.2575 },
-                { color: [175, 73, 128, 255], ratio: 0.34 },
-                { color: [184, 48, 85, 255], ratio: 0.4225 },
-                { color: [192, 24, 42, 255], ratio: 0.505 },
-                { color: [200, 0, 0, 255], ratio: 0.5875 },
-                { color: [211, 51, 0, 255], ratio: 0.67 },
-                { color: [222, 102, 0, 255], ratio: 0.7525},
-                { color: [233, 153, 0, 255], ratio: 0.835},
-                { color: [244, 204, 0, 255], ratio: 0.9175},
-                { color: [255, 255, 0, 255], ratio: 1 }
+                { color: "rgba(255, 255, 255, 0)", ratio: 0 },    // Transparent for the lowest values
+                { color: "rgba(255, 255, 204, 0.2)", ratio: 0.2 }, // Light yellow for low values
+                { color: "rgba(255, 237, 160, 0.5)", ratio: 0.4 }, // Light orange for medium-low values
+                { color: "rgba(254, 217, 118, 0.7)", ratio: 0.6 }, // Orange for medium values
+                { color: "rgba(254, 178, 76, 0.8)", ratio: 0.8 },  // Dark orange for medium-high values
+                { color: "rgba(253, 141, 60, 0.9)", ratio: 0.9 },  // Red-orange for high values
+                { color: "rgba(240, 59, 32, 1)", ratio: 1 } 
                 ],
                 minDensity: 0,
                 maxDensity: 0.319,
                 radius: 10,
-                referenceScale: 36111,
+                referenceScale: 46000,
                 
                 legendOptions: {
                 minLabel: "Low Collision Density",
@@ -88,26 +88,19 @@
             collisions.renderer = heatmapRenderer;
 
             map.add(collisions);
+            const layer = collisions;
 
             view.when().then(() => {
                 // When the view is ready, clone the heatmap renderer
                 // from the only layer in the web map
 
                 const layer = collisions;
-                const heatmapRenderer = layer.renderer.clone();
+                // const heatmapRenderer = layer.renderer.clone();
 
                 // The following simple renderer will render all points as simple
                 // markers at certain scales
 
-                const simpleRenderer = {
-                    type: "simple",
-                    symbol: {
-                    type: "simple-marker",
-                    color: "#c80000",
-                    size: 5
-                    }
-                };
-
+               
                 // When the scale is larger than 1:72,224 (zoomed in passed that scale),
                 // then switch from a heatmap renderer to a simple renderer. When zoomed
                 // out beyond that scale, switch back to the heatmap renderer
@@ -115,8 +108,86 @@
 
                 reactiveUtils.watch(
                     () => view.scale,
-                    () => {
-                    layer.renderer = view.scale <= 10000 ? simpleRenderer : heatmapRenderer;
+                    scale => {
+                        console.log(scale);
+                        if (scale < 60000) {
+                            // Below 60000 zoom level - keep the heatmap static
+                            heatmapRenderer.referenceScale = 0; // 0 disables static aspect
+                            collisions.renderer = heatmapRenderer; // Apply updated renderer
+                        } else {
+                            // Above 46000 zoom level - make the heatmap static
+                            heatmapRenderer.referenceScale = 46000; // Apply static aspect at this scale
+                            collisions.renderer = heatmapRenderer; // Apply updated renderer
+                        }
+
+                        if (scale > 10000) { // When zoom level is less than 10000
+                            layer.renderer = heatmapRenderer; // Use heatmap
+                            layer.featureReduction = null; // Disable feature reduction
+                        } else { // When zoom level is 10000 or more
+                            layer.renderer = null; // Disable renderer to use default or set it to another if necessary
+                            layer.featureReduction = { // Enable feature reduction
+                                type: "binning",
+                                fields: [
+                                    new AggregateField({
+                                        name: "aggregateCount",
+                                        statisticType: "count"
+                                    })
+                                ],
+                                fixedBinLevel: 8,
+                                opacity: 50,
+                                labelsVisible: true,
+                                labelingInfo: [
+                                    new LabelClass({
+                                        minScale: 144448,
+                                        maxScale: 0,
+                                        deconflictionStrategy: "none",
+                                        symbol: {
+                                            type: "text",  // autocasts as new TextSymbol()
+                                            color: "white",
+                                            font: {
+                                                family: "Noto Sans",
+                                                size: 10,
+                                                weight: "bold"
+                                            },
+                                            haloColor: colors[4],
+                                            haloSize: 0.5
+                                        },
+                                        labelExpressionInfo: {
+                                            expression: "Text($feature.aggregateCount, '#,###')"
+                                        }
+                                    })
+                                ],
+                                popupEnabled: true,
+                                popupTemplate: {
+                                    title: "Car crashes",
+                                    content: "{aggregateCount} car crashes occurred in this area."
+                                },
+                                renderer: {
+                                    type: "simple",
+                                    symbol: {
+                                        type: "simple-fill",
+                                        color: [0, 255, 71],
+                                        outline: {
+                                            color: "rgba(153, 31, 23, 0.3)",
+                                            width: 0.3
+                                        }
+                                    },
+                                    visualVariables: [
+                                        {
+                                            type: "color",
+                                            field: "aggregateCount",
+                                            stops: [
+                                                { value: 0, color: colors[0] },
+                                                { value: 25, color: colors[1] },
+                                                { value: 75, color: colors[2] },
+                                                { value: 200, color: colors[3] },
+                                                { value: 300, color: colors[4] }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            };
+                        }
                     }
                 );
 
