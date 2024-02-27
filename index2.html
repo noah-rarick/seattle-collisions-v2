@@ -46,9 +46,12 @@
             });
 
             const collisions = new FeatureLayer({
-                url: "https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/SDOT_Collisions_All_Years/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
+                url: "https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/SDOT_Collisions_All_Years/FeatureServer/0/query?outFields=REPORTNO,LOCATION,PERSONCOUNT,PEDCOUNT,VEHCOUNT,INJURIES,SERIOUSINJURIES,FATALITIES,INCDTTM,INATTENTIONIND,UNDERINFL&where=1%3D1&f=geojson",
+                popupTemplate: {
+                    title: "Collision Report #: {REPORTNO}",
+                    content: "Location: {LOCATION}<br>Number of Injuries: {INJURIES}<br>Number of Serious Injuries: {SERIOUSINJURIES}<br>Pedestrians: {PEDCOUNT}<br>Vehicles: {VEHCOUNT}<br>Fatalities: {FATALITIES}<br>Inattentive Driver: {INATTENTIONIND}<br>Under Influence: {UNDERINFL}"
+                }
             });
-
             // Esri color ramps - Blue and Red 18
 // #00aaffff,#0060a6ff,#403e3aff,#801921ff,#d92b2bff
             const colors = [
@@ -110,20 +113,19 @@
                     () => view.scale,
                     scale => {
                         console.log(scale);
-                        if (scale < 60000) {
-                            // Below 60000 zoom level - keep the heatmap static
-                            heatmapRenderer.referenceScale = 0; // 0 disables static aspect
-                            collisions.renderer = heatmapRenderer; // Apply updated renderer
-                        } else {
-                            // Above 46000 zoom level - make the heatmap static
+
+                        if (scale > 60000) {
+                            //above 60000 zoom -- keep heatmap static
+                            layer.featureReduction = null; //nullify feature reduction
                             heatmapRenderer.referenceScale = 46000; // Apply static aspect at this scale
                             collisions.renderer = heatmapRenderer; // Apply updated renderer
-                        }
-
-                        if (scale > 10000) { // When zoom level is less than 10000
-                            layer.renderer = heatmapRenderer; // Use heatmap
-                            layer.featureReduction = null; // Disable feature reduction
-                        } else { // When zoom level is 10000 or more
+                        } else if (10000 < scale && scale < 60000) {
+                            //between 60000 and 10000 zoom -- keep heatmap dynamic
+                            layer.featureReduction = null; //nullify feature reduction
+                            heatmapRenderer.referenceScale = 0; // 0 disables static aspect
+                            collisions.renderer = heatmapRenderer; // Apply updated renderer
+                        } else if (10000 > scale && scale > 2000) {
+                            //when the zoom is between 10,000 and 2,000 use binning
                             layer.renderer = null; // Disable renderer to use default or set it to another if necessary
                             layer.featureReduction = { // Enable feature reduction
                                 type: "binning",
@@ -187,10 +189,45 @@
                                     ]
                                 }
                             };
+                        } else { //scale is less than 2000
+                            layer.featureReduction = null;
+                            layer.renderer = {
+                                type: "unique-value",
+                                field: "INJURIES",
+                                uniqueValueInfos: [
+                                    {
+                                        value: 0,
+                                        symbol: {
+                                            type: "simple-marker",
+                                            style: "circle",
+                                            color: "blue",
+                                            size: "8px"
+                                        }
+                                    },
+                                    {
+                                        value: 1,
+                                        symbol: {
+                                            type: "simple-marker",
+                                            style: "circle",
+                                            color: "green",
+                                            size: "10px"
+                                        }
+                                    },
+                                    {
+                                        value: 2,
+                                        symbol: {
+                                            type: "simple-marker",
+                                            style: "circle",
+                                            color: "red",
+                                            size: "12px"
+                                        }
+                                    },
+                                    // Add more unique value infos for different values of INJURIES
+                                ]
+                            };
                         }
                     }
                 );
-
             });
         })
     </script>
