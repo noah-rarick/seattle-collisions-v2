@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Simple Map</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.20/c3.min.css" rel="stylesheet">
+    <script src="https://d3js.org/d3.v5.min.js" charset="utf-8"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.20/c3.min.js"></script>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.28/"></script>
+
+    <style>
+        html, body, #viewDiv {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #collisionCount {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: white;
+            padding: 5px;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            z-index: 1;
+        }
+        #chart {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 300px;
+            height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div id="viewDiv"></div>
+    <div id="collisionCount"></div>
+    <div id="chart"></div>
+    <script>
+
+        const colors = [
+            "#ff2638ff", // Original color 1
+            "#d31c33ff", // Between color 1 and 2
+            "#a6242eff", // Original color 2
+            "#812833ff", // Between color 2 and 3
+            "#403031ff", // Original color 3
+            "#36577dff", // Between color 3 and 4
+            "#2e6ca4ff", // Original color 4
+            "#2480c7ff", // Between color 4 and 5
+            "#1993ffff"  // Original color 5
+        ];
+
+
+        require([
+            "esri/config",
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/layers/FeatureLayer",
+            "esri/core/reactiveUtils",
+            "esri/renderers/HeatmapRenderer"
+        ], function(esriConfig, Map, MapView, FeatureLayer, reactiveUtils, HeatmapRenderer) {
+            esriConfig.apiKey = "AAPK76781a872cbc4f3586992bdb98501e2eangcJw2b7mb9HuZUOhY2gpytnsSM8fd8hV6sDjOMDBSbGdCpUA3oYKBRufAQEg4x";
+            const map = new Map({
+                basemap: "arcgis/streets-night" // You can change the basemap here.
+            });
+
+            const view = new MapView({
+                container: "viewDiv", // This is the ID of the div where the map will be rendered.
+                map: map,
+                zoom: 11, // Sets zoom level based on scale
+                center: [-122.3321, 47.6562], // Sets the center point of view in longitude,latitude
+                constraints: {
+                    minScale: 1155582,
+                    snapToZoom: false
+                }
+            });
+
+            const collisions = new FeatureLayer({
+                url: "https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/SDOT_Collisions_All_Years/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
+            });
+
+            map.add(collisions);
+
+            // Query the feature layer to get the count of collisions within the map bounds
+            view.whenLayerView(collisions).then(function(layerView) {
+                // Wrap the logic in a function so we can debounce it
+                const updateChart = function() {
+                    // Perform individual queries for each injury count category
+                    let injuryCategories = [1, 2, 3, 4, 5, 6, 7, 8, "9+"]; // Ensure this reflects your actual categories
+                    let queries = injuryCategories.map(injuryCount => {
+                        let query = collisions.createQuery();
+                        query.geometry = view.extent;
+                        if (injuryCount === "9+") {
+                            query.where = "INJURIES >= 9"; // Adjust for actual field and value
+                        } else {
+                            query.where = `INJURIES = ${injuryCount}`; // Adjust for actual field and value
+                        }
+                        return collisions.queryFeatureCount(query); // We just need the count
+                
+                    });
+
+
+                    // Wait for all queries to complete
+                    Promise.all(queries).then(results => {
+                        
+                        const chartData = ["Injuries"].concat(results); // Prepend label
+                        const chart = c3.generate({
+                            bindto: "#chart",
+                            data: {
+                                columns: [
+                                    chartData
+                                ],
+                                type: "bar"
+                            },
+                            colors: {
+                                pattern: [
+                                    "#ff2638ff", // Original color 1
+                                    "#d31c33ff", // Between color 1 and 2
+                                    "#a6242eff", // Original color 2
+                                    "#812833ff", // Between color 2 and 3
+                                    "#403031ff", // Original color 3
+                                    "#36577dff", // Between color 3 and 4
+                                    "#2e6ca4ff", // Original color 4
+                                    "#2480c7ff", // Between color 4 and 5
+                                    "#1993ffff"  // Original color 5
+                                ]
+                            },
+                            axis: {
+                                x: {
+                                    type: "category",
+                                    categories: injuryCategories.map(category => `${category}`), // Label categories
+                                    label: {
+                                        text:"Number of Injuries",
+                                        position: "outer-center"
+                                    }
+                                },
+                                y: {
+                                    label: { // Add label configuration here
+                                        text: 'Number of Collisions',
+                                        position: 'outer-middle'
+                                    }
+                                }
+                            }
+                        });
+                    });
+                };
+
+                // Apply debounce to the updateChart function
+                const debouncedUpdateChart = debounce(updateChart, 400); // Adjust the delay as needed
+
+                // Replace the direct call with the debounced function
+                view.watch("extent", function() {
+                    debouncedUpdateChart();
+                });
+            });
+
+            function debounce(func, wait, immediate) {
+                let timeout;
+                return function() {
+                    const context = this, args = arguments;
+                    const later = function() {
+                        timeout = null;
+                        if (!immediate) func.apply(context, args);
+                    };
+                    const callNow = immediate && !timeout;
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                    if (callNow) func.apply(context, args);
+                };
+            }
+        });
+    </script>
+</body>
