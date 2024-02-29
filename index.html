@@ -16,10 +16,12 @@
             width: 25%;
             height: 100%;
             position: fixed;
+            left: 0;
             background-color: #343a40;
             color: white;
             overflow-y: auto;
             padding: 20px;
+            transition: transform 0.3s ease-in-out;
         }
         #map {
             position: absolute;
@@ -27,6 +29,7 @@
             right: 0;
             bottom: 0;
             left: 25%;
+            transition: left 0.3s ease-in-out;
         }
         .kpi {
             margin-bottom: 20px;
@@ -35,9 +38,36 @@
             color: #000;
             border-radius: 4px;
         }
+        /* Landing Page Styles */
+        #landing-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+            color: white;
+            text-align: center;
+            z-index: 10; /* Ensure it's above other elements */
+        }
+        #landing-content {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
+
+<!-- Landing Page -->
+<div id="landing-page">
+    <div id="landing-content">
+        <h1>Welcome to the Seattle Traffic Collisions Dashboard</h1>
+        <p>Explore real-time data on traffic incidents around Seattle.</p>
+        <button onclick="startApp()">Enter Dashboard</button>
+    </div>
+</div>
 
 <div id="sidebar">
     <h1>Analytics Panel</h1>
@@ -52,34 +82,42 @@
     // This is Mars Mapbox token
     mapboxgl.accessToken = 'pk.eyJ1Ijoiem91eWFuZzEwMjYiLCJhIjoiY2xzaWxvcHhhMWZlNDJpcGpjZ2Y3anVtZiJ9.5QC-TrmUDxO7NBxpXGIKvA';
 
-    // Initialize the map
-    const map = new mapboxgl.Map({
-        container: 'map', 
-        style: 'mapbox://styles/mapbox/dark-v10', // style URL
-        center: [-122.335167, 47.608013], //  seattle
-        zoom: 10 
-    });
+    // Function to start the app and hide the landing page
+    function startApp() {
+        document.getElementById('landing-page').style.display = 'none';
+        initializeMap();
+    }
 
-    // Add zoom and rotation controls to the map
-    map.addControl(new mapboxgl.NavigationControl());
+    function initializeMap() {
+        // Initialize the map
+        const map = new mapboxgl.Map({
+            container: 'map', 
+            style: 'mapbox://styles/mapbox/dark-v10', // style URL
+            center: [-122.335167, 47.608013], // Seattle
+            zoom: 10 
+        });
 
-    // Function to fetch and display total fatalities
-    async function updateTotalFatalities() {
-        const bounds = map.getBounds();
-        // Add a timestamp to the query to avoid caching
-        const query = `https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/SDOT_Collisions_All_Years/FeatureServer/0/query?outFields=FATALITIES&where=1%3D1&geometry=${bounds.getWest()},${bounds.getSouth()},${bounds.getEast()},${bounds.getNorth()}&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&f=geojson&cacheBust=${Date.now()}`;
-        const response = await fetch(query);
-        const data = await response.json();
+        // Add zoom and rotation controls to the map
+        map.addControl(new mapboxgl.NavigationControl());
 
-        let totalFatalities = data.features.reduce((sum, feature) => sum + (feature.properties.FATALITIES || 0), 0);
+        // Function to fetch and display total fatalities
+        async function updateTotalFatalities() {
+            const bounds = map.getBounds();
+            // Add a timestamp to the query to avoid caching
+            const query = `https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/SDOT_Collisions_All_Years/FeatureServer/0/query?outFields=FATALITIES&where=1%3D1&geometry=${bounds.getWest()},${bounds.getSouth()},${bounds.getEast()},${bounds.getNorth()}&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&f=geojson&cacheBust=${Date.now()}`;
+            const response = await fetch(query);
+            const data = await response.json();
+
+            let totalFatalities = data.features.reduce((sum, feature) => sum + (feature.properties.FATALITIES || 0), 0);
         
-        document.getElementById('total-fatalities').textContent = `Total Fatalities: ${totalFatalities}`;
-}
+            document.getElementById('total-fatalities').textContent = `Total Fatalities: ${totalFatalities}`;
 
+        }
 
-    // Update the total fatalities when the map loads and when the view changes
-    map.on('load', updateTotalFatalities);
-    map.on('moveend', updateTotalFatalities);
+        // Update the total fatalities when the map loads and when the view changes
+        map.on('load', updateTotalFatalities);
+        map.on('moveend', updateTotalFatalities);
+    }
 </script>
 
 </body>
