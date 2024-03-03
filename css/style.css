@@ -1,0 +1,38 @@
+#viewDiv {
+    height: 100%;
+    width: 80%
+}
+#chart {
+    position: absolute;
+    height: 300px;
+}
+
+body {
+    height: 100%;
+    width: 100%;
+}
+
+
+#collapse-button {
+    display: block;
+    margin-left: auto;
+}
+
+.flex-shrink-0.p-3 {
+    width: 280px;
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(0);
+}
+
+.flex-shrink-0.p-3.closed {
+    transform: translateX(-100%);
+}
+
+#viewDiv {
+    width: 80%;
+    position: absolute; /* Position the map view relative to the body */
+    left: 300px; /* Move the map view to the right of the sidebar */
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
