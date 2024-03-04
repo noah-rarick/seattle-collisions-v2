@@ -19,19 +19,19 @@ body {
 }
 
 .flex-shrink-0.p-3 {
-    width: 280px;
+    width: 30%;
     transition: transform 0.3s ease-in-out;
     transform: translateX(0);
 }
+
 
 .flex-shrink-0.p-3.closed {
     transform: translateX(-100%);
 }
 
 #viewDiv {
-    width: 80%;
+    width: 70%;
     position: absolute; /* Position the map view relative to the body */
-    left: 300px; /* Move the map view to the right of the sidebar */
     top: 0;
     right: 0;
     bottom: 0;
