@@ -5,16 +5,19 @@
 Our project idea of creating a smart dashboard to explore the connection between traffic collisions and other factors like average daily traffic counts and street speed limits in Seattle is a compelling approach to addressing urban mobility and safety issues. This dashboard aims to provide a comprehensive view of how various factors interplay to affect traffic conditions, potentially leading to collisions. Let's go deeper into the functionalities and benefits of such a dashboard.
 
 **Interactive Heatmaps for Collision Data**
+
 The use of heatmaps is an effective way to visualize high-density areas of traffic collisions. Users can quickly identify hotspots where accidents frequently occur. This visual tool can be interactive, allowing users to zoom in or out and click on specific areas for detailed statistics, such as the number of collisions, time of day when most accidents happen, and possible causes. This immediate, visual representation makes it easier for city planners, traffic authorities, and the general public to understand where interventions are most needed.
 
 **Data-Driven Decision Making**
+
 The dashboard can serve as a powerful tool for data-driven decision-making. By analyzing the correlation between traffic collisions and other factors, city planners can make informed decisions on where to implement safety measures such as speed bumps, traffic lights, or enhanced signage. Furthermore, this analysis can guide infrastructure improvements, like road widening or the creation of pedestrian zones, to enhance overall traffic safety and efficiency.
 
 **Real-Time Updates and Predictive Analytics**
+
 Incorporating real-time data feeds into the dashboard can provide users with up-to-date information on traffic conditions and collision occurrences. This feature is particularly useful for emergency response teams and daily commuters. Additionally, integrating predictive analytics can forecast potential collision hotspots based on historical data and current trends. This foresight can be instrumental in preemptive measures to reduce traffic collisions.
 
 Here is our project's visualization:
-[Our Interactive Map](https://noah-rarick.github.io/seattle-collisions-v2/)
+[Interactive Map](https://noah-rarick.github.io/seattle-collisions-v2/)
 
 ## Project Process
 Some of what we appreciated in this project was the year-over-year drill-down of traffic collisions, as well as the categorical grouping of collision causes. We thought that this dashboard provided a very interesting array of statistics that could be used to gain insights on Seattle collisions. We hope to provide statistics on impaired driving, intoxicated driving and more as they pie charts were highly interesting.
