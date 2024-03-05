@@ -31,7 +31,13 @@ require([
         definitionExpression: "1=1", // Adjust this to limit data based on the most common queries
         popupTemplate: {
             title: "Collision Report #: {REPORTNO}",
-            content: "Location: {LOCATION}<br>Number of Injuries: {INJURIES}<br>Number of Serious Injuries: {SERIOUSINJURIES}<br>Pedestrians: {PEDCOUNT}<br>Vehicles: {VEHCOUNT}<br>Fatalities: {FATALITIES}<br>Inattentive Driver: {INATTENTIONIND}<br>Under Influence: {UNDERINFL}"
+            content: function(feature) {
+                const coords = feature.graphic.geometry;
+                const streetviewUrl= 'https://google.com/maps?q=&layer=c&cbll=' + coords.latitude + ',' + coords.longitude;
+                console.log(streetviewUrl);
+                return "Location: {LOCATION}<br>Number of Injuries: {INJURIES}<br>Number of Serious Injuries: {SERIOUSINJURIES}<br>Pedestrians: {PEDCOUNT}<br>Vehicles: {VEHCOUNT}<br>Fatalities: {FATALITIES}<br>Inattentive Driver: {INATTENTIONIND}<br>Under Influence: {UNDERINFL}<br>"
+            + '<a href='+ streetviewUrl + '>Street View</a>';
+            }
         }
     });
 
@@ -506,8 +512,5 @@ require([
         var sidebar = document.querySelector('.flex-shrink-0.p-3');
         var button = document.getElementById("collapse-button");
         
-        button.addEventListener('click', function() {
-            sidebar.classList.toggle('closed');
-        });
     });
 })
