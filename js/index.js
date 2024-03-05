@@ -160,7 +160,7 @@ require([
 
             const updateChart = function() {
                 // Perform individual queries for each injury count category
-                let injuryCategories = [1, 2, 3, 4, 5, 6, 7, 8, "9+"]; // Ensure this reflects your actual categories
+                let injuryCategories = [0,1, 2, 3, 4, 5, 6, 7, 8, "9+"]; // Ensure this reflects your actual categories
                 let queries = injuryCategories.map(injuryCount => {
                     let query = collisions.createQuery();
                     query.returnGeometry = false;
@@ -172,52 +172,108 @@ require([
                     }
                     return collisions.queryFeatureCount(query);
                 });
-
+            
                 // Wait for all queries to complete
                 Promise.all(queries).then(results => {
-                    const chartData = ["Injuries"].concat(results); // Prepend label
-                    console.log("1");
-
+                    // Convert results into a format suitable for a pie chart: [["1", count1], ["2", count2], ...]
+                    const chartData = injuryCategories.map((category, index) => [`${category}`, results[index]]);
+            
                     const chart = c3.generate({
                         bindto: "#chart",
                         data: {
-                            columns: [
-                                chartData
-                            ],
-                            type: "bar"
+                            columns: chartData,
+                            type: "pie"
                         },
-                        colors: {
+                        color: {
                             pattern: [
-                                "#ff2638ff", // Original color 1
-                                "#d31c33ff", // Between color 1 and 2
-                                "#a6242eff", // Original color 2
-                                "#812833ff", // Between color 2 and 3
-                                "#403031ff", // Original color 3
-                                "#36577dff", // Between color 3 and 4
-                                "#2e6ca4ff", // Original color 4
-                                "#2480c7ff", // Between color 4 and 5
-                                "#1993ffff"  // Original color 5
+                                "#005bb2ff", 
+                                "#00488cff", 
+                                "#472459ff",
+                                "#800000ff",
+                                "#a20707ff", 
+                                "#c40f0fff", 
+                                "#e61616ff", 
+                                "#ff4d4dff",
+                                "#ff9f70",
+                                "#ffc993"// Original color 5
                             ]
                         },
-                        axis: {
-                            x: {
-                                type: "category",
-                                categories: injuryCategories.map(category => `${category}`), // Label categories
-                                label: {
-                                    text:"Number of Injuries",
-                                    position: "outer-center"
-                                }
-                            },
-                            y: {
-                                label: { // Add label configuration here
-                                    text: 'Number of Collisions',
-                                    position: 'outer-middle'
+                        tooltip: {
+                            format: {
+                                title: function (d) { return 'Injuries: ' + name; },
+                                name: function (name, ratio, id, index) { return 'Injuries Category: ' + name; },
+                                value: function (value, ratio, id, index) {
+                                    // Assuming 'value' is the number of collisions
+                                    return value + ' collisions'; // Customizes the tooltip text
                                 }
                             }
                         }
+                        // Remove axis configurations, as they are not used in pie charts
                     });
                 });
             };
+            
+
+            // const updateChart = function() {
+            //     // Perform individual queries for each injury count category
+            //     let injuryCategories = [1, 2, 3, 4, 5, 6, 7, 8, "9+"]; // Ensure this reflects your actual categories
+            //     let queries = injuryCategories.map(injuryCount => {
+            //         let query = collisions.createQuery();
+            //         query.returnGeometry = false;
+            //         query.geometry = view.extent;
+            //         if (injuryCount === "9+") {
+            //             query.where = "INJURIES >= 9"; // Adjust for actual field and value
+            //         } else {
+            //             query.where = `INJURIES = ${injuryCount}`; // Adjust for actual field and value
+            //         }
+            //         return collisions.queryFeatureCount(query);
+            //     });
+
+            //     // Wait for all queries to complete
+            //     Promise.all(queries).then(results => {
+            //         const chartData = ["Injuries"].concat(results); // Prepend label
+            //         console.log("1");
+
+            //         const chart = c3.generate({
+            //             bindto: "#chart",
+            //             data: {
+            //                 columns: [
+            //                     chartData
+            //                 ],
+            //                 type: "bar"
+            //             },
+            //             colors: {
+            //                 pattern: [
+            //                     "#ff2638ff", // Original color 1
+            //                     "#d31c33ff", // Between color 1 and 2
+            //                     "#a6242eff", // Original color 2
+            //                     "#812833ff", // Between color 2 and 3
+            //                     "#403031ff", // Original color 3
+            //                     "#36577dff", // Between color 3 and 4
+            //                     "#2e6ca4ff", // Original color 4
+            //                     "#2480c7ff", // Between color 4 and 5
+            //                     "#1993ffff"  // Original color 5
+            //                 ]
+            //             },
+            //             axis: {
+            //                 x: {
+            //                     type: "category",
+            //                     categories: injuryCategories.map(category => `${category}`), // Label categories
+            //                     label: {
+            //                         text:"Number of Injuries",
+            //                         position: "outer-center"
+            //                     }
+            //                 },
+            //                 y: {
+            //                     label: { // Add label configuration here
+            //                         text: 'Number of Collisions',
+            //                         position: 'outer-middle'
+            //                     }
+            //                 }
+            //             }
+            //         });
+            //     });
+            // };
 
             // Apply debounce to the updateChart function
             // const debouncedUpdateChart = debounce(updateChart, 400); // Adjust the delay as needed
