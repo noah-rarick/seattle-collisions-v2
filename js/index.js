@@ -36,11 +36,11 @@ require([
     });
 
     const colors = [
-        "rgba(0, 170, 255, .3)",
-        "rgba(0, 96, 166, .3)",
-        "rgba(64, 62, 58, .3)",
-        "rgba(128, 25, 33, .3)",
-        "rgba(217, 43, 43, .3)"
+        "rgba(0, 170, 255, .8)",
+        "rgba(0, 96, 166, .8)",
+        "rgba(64, 62, 58, .8)",
+        "rgba(128, 25, 33, .8)",
+        "rgba(217, 43, 43, .8)"
     ];
 
 
@@ -76,9 +76,11 @@ require([
 
         // Function to update collision data based on current view extent
         view.whenLayerView(collisions).then(function(layerView) {
-            view.watch("extent", function() {
-                debouncedUpdateChart();
-            });
+
+            view.watch("extent", debounce((extent) => {
+                updateChart();
+                updateGaugeChart();
+            }, 250));
 
             
             let legend = new Legend({
@@ -91,13 +93,77 @@ require([
             view.watch("scale", debounce((scale) => {
                 scaleUpdate(scale);
             }, 250));
-            // Wrap the logic in a function so we can debounce it
+            
+
+            // Function to update the chart based on the current view extent
+
+            const updateGaugeChart = function() {
+                let query = collisions.createQuery();
+                query.geometry = view.extent; // Use the current view extent
+                query.returnGeometry = false;
+                query.outStatistics = [
+                    { // Total number of injuries
+                        onStatisticField: "INJURIES", 
+                        outStatisticFieldName: "totalInjuries",
+                        statisticType: "sum"
+                    },
+                    { // Total number of collisions
+                        onStatisticField: "REPORTNO", 
+                        outStatisticFieldName: "count",
+                        statisticType: "count"
+                    }
+                ];
+            
+                collisions.queryFeatures(query).then(function(result) {
+                    if (result.features.length > 0) {
+                        let stats = result.features[0].attributes;
+                        let totalInjuries = stats.totalInjuries;
+                        var collisionCountElement = document.getElementById("collision-count");
+                        collisionCountElement.innerHTML = `Total Collisions: ${stats.count}`;
+                        let totalCollisions = stats.count;
+                        let injuryRate = totalCollisions > 0 ? (totalInjuries / totalCollisions) : 0; // Avoid division by zero
+                        
+                        // Update the C3 gauge chart with the injury rate
+                        const chart = c3.generate({
+                            bindto: '#rate-chart', // Specify the ID of the chart container
+                            data: {
+                                columns: [
+                                    ['Injury Rate', injuryRate]
+                                ],
+                                type: 'gauge'
+                            },
+                            gauge: {
+                                label: {
+                                    format: function(value, ratio) {
+                                        return (value * 100).toFixed(2) + "%"; // Display the raw value
+                                    }
+                                },
+                                min: 0, // Set gauge's minimum and maximum if necessary
+                                max: 1, // Assuming the injury rate cannot exceed 1 (adjust as needed)
+                                
+                            },
+                            color: {
+                                pattern: [colors[0], colors[1], colors[3], colors[4]], // Colors for different ranges, adjust as needed
+                                threshold: {
+                                    // Adjust these based on what you consider low/medium/high rates
+                                    unit: 'value', // Use 'value' if you're specifying exact points; otherwise 'ratio' for percentage of max
+                                    values: [0.25, 0.3, 0.35, .4] // Change these values based on your rate thresholds
+                                },
+                            },
+                            size: {
+                                height: 180 // Adjust the height of the gauge chart
+                            }
+                        });
+                    }
+                });
+            };
+
             const updateChart = function() {
-                var collisionCountElement = document.getElementById("collision-count");
                 // Perform individual queries for each injury count category
                 let injuryCategories = [1, 2, 3, 4, 5, 6, 7, 8, "9+"]; // Ensure this reflects your actual categories
                 let queries = injuryCategories.map(injuryCount => {
                     let query = collisions.createQuery();
+                    query.returnGeometry = false;
                     query.geometry = view.extent;
                     if (injuryCount === "9+") {
                         query.where = "INJURIES >= 9"; // Adjust for actual field and value
@@ -109,10 +175,9 @@ require([
 
                 // Wait for all queries to complete
                 Promise.all(queries).then(results => {
-                    const totalCollisions = results.reduce((a, b) => a + b, 0);
-                    collisionCountElement.innerHTML = `Total Collisions: ${totalCollisions}`;
                     const chartData = ["Injuries"].concat(results); // Prepend label
                     console.log("1");
+
                     const chart = c3.generate({
                         bindto: "#chart",
                         data: {
@@ -155,12 +220,14 @@ require([
             };
 
             // Apply debounce to the updateChart function
-            const debouncedUpdateChart = debounce(updateChart, 400); // Adjust the delay as needed
-            const debouncedScaleUpdate = debounce(scaleUpdate, 100);
+            // const debouncedUpdateChart = debounce(updateChart, 400); // Adjust the delay as needed
+            // const debouncedGaugeChart = debounce(updateGaugeChart, 400);
+            // const debouncedScaleUpdate = debounce(scaleUpdate, 100);
 
             // as the extent changes, update the chart with debounce
             //initalize the chart upon load
             updateChart();
+            updateGaugeChart();
         });
 
         // Debounce function to limit the number of times a function is called
@@ -220,8 +287,28 @@ require([
                     type: "binning",
                     fields: [
                         new AggregateField({
-                            name: "aggregateCount",
+                            name: "aggregateCollisions",
                             statisticType: "count"
+                        }),
+                        new AggregateField({
+                            name: "averageInjuries",
+                            onStatisticField: "INJURIES", // Field name in the dataset
+                            outStatisticFieldName: "averageInjuries",
+                            statisticType: "avg",
+                            format: {
+                                places: 2,
+                                digitSeparator: true
+                            }
+                        }),
+                        new AggregateField({
+                            name: "averageSeriousInjuries",
+                            onStatisticField: "SERIOUSINJURIES", // Field name in the dataset
+                            outStatisticFieldName: "averageSeriousInjuries",
+                            statisticType: "avg",
+                            format: {
+                                places: 2,
+                                digitSeparator: true
+                            }
                         })
                     ],
                     fixedBinLevel: 8,
@@ -244,14 +331,44 @@ require([
                                 haloSize: 0.5
                             },
                             labelExpressionInfo: {
-                                expression: "Text($feature.aggregateCount, '#,###')"
+                                expression: "Text($feature.aggregateCollisions, '#,###')"
                             }
                         })
                     ],
                     popupEnabled: true,
                     popupTemplate: {
-                        title: "Car crashes",
-                        content: "{aggregateCount} car crashes occurred in this area."
+                        title: "Bin Statistics",
+                        content: [
+                            {
+                                type: "fields",
+                                fieldInfos: [
+                                    {
+                                        fieldName: "aggregateCollisions",
+                                        label: "Total Collisions",
+                                        format: {
+                                            places: 0, // No decimal places for count
+                                            digitSeparator: true // Use comma as thousands separator
+                                        }
+                                    },
+                                    {
+                                        fieldName: "averageInjuries",
+                                        label: "Injury Rate",
+                                        format: {
+                                            places: 2, // Two decimal places for average
+                                            digitSeparator: true // Use comma as thousands separator
+                                        }
+                                    },
+                                    {
+                                        fieldName: "averageSeriousInjuries",
+                                        label: "Serious Injury Rate",
+                                        format: {
+                                            places: 2, // Two decimal places for average
+                                            digitSeparator: true // Use comma as thousands separator
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     renderer: {
                         type: "simple",
@@ -266,7 +383,7 @@ require([
                         visualVariables: [
                             {
                                 type: "color",
-                                field: "aggregateCount",
+                                field: "aggregateCollisions",
                                 stops: [
                                     { value: 0, color: colors[0] },
                                     { value: 10, color: colors[1] },

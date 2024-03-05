@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Simple Map</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.28/"></script>
+
+    <style>
+        html, body, #viewDiv {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="viewDiv"></div>
+    <script>
+        require([
+            "esri/config",
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/layers/FeatureLayer",
+            "esri/layers/HexbinLayer",
+            "esri/core/reactiveUtils",
+            "esri/renderers/HeatmapRenderer",
+            "esri/widgets/Popup"
+        ], function(esriConfig, Map, MapView, FeatureLayer, HexbinLayer, reactiveUtils, HeatmapRenderer, Popup) {
+            esriConfig.apiKey = "AAPK76781a872cbc4f3586992bdb98501e2eangcJw2b7mb9HuZUOhY2gpytnsSM8fd8hV6sDjOMDBSbGdCpUA3oYKBRufAQEg4x";
+            const map = new Map({
+                basemap: "arcgis/streets-night" // You can change the basemap here.
+            });
+
+            const view = new MapView({
+                container: "viewDiv", // This is the ID of the div where the map will be rendered.
+                map: map,
+                zoom: 11, // Sets zoom level based on scale
+                center: [-122.3321, 47.6562], // Sets the center point of view in longitude,latitude
+                constraints: {
+                    minScale: 1155582,
+                    snapToZoom: false
+                }
+            });
+
+            const collisions = new FeatureLayer({
+                url: "https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/SDOT_Collisions_All_Years/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson",
+                popupTemplate: {
+                    title: "Collision Report #: {REPORTNO}",
+                    content: "Location: {LOCATION}<br>Number of Injuries: {INJURIES}<br>Number of Serious Injuries: {SERIOUSINJURIES}<br>Pedestrians: {PEDCOUNT}<br>Vehicles: {VEHCOUNT}<br>Fatalities: {FATALITIES}<br>Inattentive Driver: {INATTENTIONIND}<br>Under Influence: {UNDERINFL}"
+                }
+            });
+
+            const hexbinLayer = new HexbinLayer({
+                url: "https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/SDOT_Collisions_All_Years/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson",
+                fields: ["OBJECTID"],
+                radius: 1000, // Adjust the radius of each hexagon
+                opacity: 0.8, // Adjust the opacity of the hexagons
+                color: "#ff0000", // Adjust the color of the hexagons
+                outline: {
+                    color: "#ffffff",
+                    width: 0.5
+                },
+                legendOptions: {
+                    showLegend: true,
+                    legendTitle: "Number of Collisions"
+                }
+            });
+
+            const heatmapRenderer = {
+                // field: "INJURIES",
+                type: "heatmap",
+                colorStops: [
+                { color: [133, 193, 200, 0], ratio: 0 },
+                { color: [133, 193, 200, 0], ratio: 0.01 },
+                { color: [133, 193, 200, 255], ratio: 0.01 },
+                { color: [133, 193, 200, 255], ratio: 0.01 },
+                { color: [144, 161, 190, 255], ratio: 0.0925 },
+                { color: [156, 129, 132, 255], ratio: 0.175 },
+                { color: [167, 97, 170, 255], ratio: 0.2575 },
+                { color: [175, 73, 128, 255], ratio: 0.34 },
+                { color: [184, 48, 85, 255], ratio: 0.4225 },
+                { color: [192, 24, 42, 255], ratio: 0.505 },
+                { color: [200, 0, 0, 255], ratio: 0.5875 },
+                { color: [211, 51, 0, 255], ratio: 0.67 },
+                { color: [222, 102, 0, 255], ratio: 0.7525},
+                { color: [233, 153, 0, 255], ratio: 0.835},
+                { color: [244, 204, 0, 255], ratio: 0.9175},
+                { color: [255, 255, 0, 255], ratio: 1 }
+                ],
+                minDensity: 0,
+                maxDensity: 0.319,
+                radius: 5,
+                referenceScale: 25000,
+                
+                legendOptions: {
+                minLabel: "Low Collision Density",
+                maxLabel: "High Collision Density"
+              }
+            };
+
+            // heatmapRenderer.field = "INJURIES";
+
+            collisions.renderer = heatmapRenderer;
+
+            map.add(collisions);
+            map.add(hexbinLayer);
+
+            view.when().then(() => {
+                // When the view is ready, clone the heatmap renderer
+                // from the only layer in the web map
+
+                const layer = collisions;
+                const heatmapRenderer = layer.renderer.clone();
+
+                // The following simple renderer will render all points as simple
+                // markers at certain scales
+
+                const simpleRenderer = {
+                    type: "simple",
+                    symbol: {
+                    type: "simple-marker",
+                    color: "#c80000",
+                    size: 5
+                    }
+                };
+
+                // When the scale is larger than 1:10000 (zoomed in passed that scale),
+                // then switch from a heatmap renderer to a simple renderer. When zoomed
+                // out beyond that scale, switch back to the heatmap renderer
+                
+
+                reactiveUtils.watch(
+                    () => view.scale,
+                    () => {
+                    layer.renderer = view.scale <= 10000 ? simpleRenderer : heatmapRenderer;
+                    }
+                );
+
+            });
+        })
+    </script>
+</body>
+</html>

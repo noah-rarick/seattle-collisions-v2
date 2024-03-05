@@ -37,6 +37,16 @@
             </div>
           </li>
           <li class="mb-1">
+            <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rate" data-bs-toggle="collapse" data-bs-target="#rate-collapse" aria-expanded="false">
+              Injury Rate<box-icon type='solid' name='chevron-down'></box-icon>
+            </button>
+            <div class="collapse" id="rate-collapse">
+              <div id="rate-chart">
+                <h3><span id="collision-count"></span></h3>
+              </div>
+            </div>
+          </li>
+          <li class="mb-1">
             <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed" data-bs-toggle="collapse" data-bs-target="#home-collapse" aria-expanded="true">
               Collisions by Injury Counts<box-icon type='solid' name='chevron-down'></box-icon>
             </button>
@@ -46,19 +56,7 @@
               </ul>
             </div>
           </li>
-          <li class="mb-1">
-            <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed" data-bs-toggle="collapse" data-bs-target="#orders-collapse" aria-expanded="false">
-              Orders
-            </button>
-            <div class="collapse" id="orders-collapse">
-              <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-                <li><a href="#" class="link-body-emphasis d-inline-flex text-decoration-none rounded">New</a></li>
-                <li><a href="#" class="link-body-emphasis d-inline-flex text-decoration-none rounded">Processed</a></li>
-                <li><a href="#" class="link-body-emphasis d-inline-flex text-decoration-none rounded">Shipped</a></li>
-                <li><a href="#" class="link-body-emphasis d-inline-flex text-decoration-none rounded">Returned</a></li>
-              </ul>
-            </div>
-          </li>
+        
           <li class="border-top my-3"></li>
           <li class="mb-1">
             <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed" data-bs-toggle="collapse" data-bs-target="#account-collapse" aria-expanded="false">
