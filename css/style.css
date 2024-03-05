@@ -1,0 +1,60 @@
+#viewDiv {
+    height: 100%;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 30%; /* Left should be equal to the width of the sidebar when it's expanded */
+    transition: left 0.3s ease-in-out; /* Smooth transition for the map view */
+}
+
+#chart {
+    position: absolute;
+    height: 300px;
+}
+
+body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    overflow: hidden; /* Prevent scrolling on the whole page */
+}
+
+#collapse-button {
+    display: block;
+    margin-left: auto;
+}
+
+.flex-shrink-0.p-3 {
+    height: 100%;
+    width: 30%;
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(0);
+}
+
+.flex-shrink-0.p-3.closed {
+    transform: translateX(-100%);
+}
+
+#viewDiv.full {
+    left: 0; /* When the sidebar is closed, the map view takes the full width */
+}
+
+.collapse-button-external {
+    position: fixed;
+    left: 10px; 
+    top: 13%;
+    transform: translateY(-50%);
+    z-index: 1000;
+    display: none;
+}
+
+.closed {
+    width: 0;
+    overflow: hidden;
+}
+
+
+.full {
+    width: 100%;
+}
