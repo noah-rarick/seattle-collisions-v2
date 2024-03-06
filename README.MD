@@ -25,12 +25,12 @@ Here are the resources and methods we studied and used from:
 - [Fatal Crashes Dashboard from WTC](https://wtsc.wa.gov/dashboards/fatal-crash-dashboard/)
 
 ## Project Display
-![Interface Page](https://github.com/noah-rarick/seattle-collisions-v2/blob/main/img/Map1.png)
+![Interface Page](https://github.com/noah-rarick/seattle-collisions-v2/blob/Marshal/img/Map1.png)
 Here is the interface page of our interactive map. We can see that there is a smart dashboard designed to explore the connection between traffic collisions and factors like average daily traffic counts and street speed limits in Seattle, users can expect a rich and informative experience. Here are the key elements and functionalities that can be typically seen and interacted with on such a dashboard's interface page. The interface of such a smart dashboard is designed to be intuitive yet comprehensive, enabling users from various backgrounds like city planners, traffic authorities, local residents, or researchers to gain valuable insights into traffic safety and contribute to making informed decisions towards improving urban mobility and safety.
 
-![Map Details](https://github.com/noah-rarick/seattle-collisions-v2/blob/main/img/Map2.png)
+![Map Details](https://github.com/noah-rarick/seattle-collisions-v2/blob/Marshal/img/Map2.png)
 A central feature displaying a geographical map of Seattle, where users can pan and zoom to explore different areas. Tools like zoom in/out, pan, and reset view options to navigate the map easily. Heatmap layer is used for visual representation of traffic collision data, with areas of higher collision frequencies shown in warmer colors (e.g., red) and lower frequencies in cooler colors (e.g., blue). Semantic layers are used for toggleable layers that overlay additional information on the map, such as street speed limits and average daily traffic counts, possibly using icons or color-coded lines. The dashboard also includes real-time data, indicators or markers for recent collisions or traffic flow status could be present. We allow users to provide feedback on the dashboard's functionality, report errors, or suggest improvements. Users can also customize options to adjust map views, data layers displayed, and notification preferences.
 
-![Visualzing Analytics](https://github.com/noah-rarick/seattle-collisions-v2/blob/main/img/Map3.png)
+![Visualzing Analytics](https://github.com/noah-rarick/seattle-collisions-v2/blob/Marshal/img/Map3.png)
 
 In Analytics bar, we can see the details of number of collisions and number of injuries of each area we chose. The statistics and analytics will change when we choose different areas and will also keep updating with updating datasets.
