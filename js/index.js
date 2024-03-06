@@ -511,6 +511,6 @@ require([
         // var sidebar = document.getElementById('sidebar');
         var sidebar = document.querySelector('.flex-shrink-0.p-3');
         var button = document.getElementById("collapse-button");
-        
+
     });
 })
