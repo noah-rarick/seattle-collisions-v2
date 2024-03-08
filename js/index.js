@@ -27,7 +27,7 @@ require([
 
     const collisions = new FeatureLayer({
         url: "https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/SDOT_Collisions_All_Years/FeatureServer/0",
-        outFields: ["REPORTNO", "LOCATION", "INJURIES", "SERIOUSINJURIES", "PEDCOUNT", "VEHCOUNT", "FATALITIES", "INATTENTIONIND", "UNDERINFL"],
+        outFields: ["REPORTNO", "INCDATE", "LOCATION", "INJURIES", "SERIOUSINJURIES", "PEDCOUNT", "VEHCOUNT", "FATALITIES", "INATTENTIONIND", "UNDERINFL"],
         definitionExpression: "1=1", // Adjust this to limit data based on the most common queries
         popupTemplate: {
             title: "Collision Report #: {REPORTNO}",
@@ -511,6 +511,28 @@ require([
         // var sidebar = document.getElementById('sidebar');
         var sidebar = document.querySelector('.flex-shrink-0.p-3');
         var button = document.getElementById("collapse-button");
-
+        var sidebar = document.querySelector('.flex-shrink-0.p-3');
+        var mapViewDiv = document.getElementById("viewDiv");
+        var button = document.getElementById("collapse-button"); 
+        var buttonExternal = document.getElementById("collapse-button-external"); 
+ 
+        
+        function toggleSidebar() {
+            sidebar.classList.toggle('closed');
+            mapViewDiv.classList.toggle('full');
+            
+            buttonExternal.style.display = sidebar.classList.contains('closed') ? "block" : "none";
+        }
+ 
+       
+        button.addEventListener('click', toggleSidebar);
+ 
+        
+        buttonExternal.addEventListener('click', function() {
+            sidebar.classList.remove('closed');
+            mapViewDiv.classList.remove('full');
+            this.style.display = "none"; 
+        });
+        
     });
 })

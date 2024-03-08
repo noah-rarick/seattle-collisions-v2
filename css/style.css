@@ -1,7 +1,15 @@
 #viewDiv {
+    width: 70%;
     height: 100%;
-    width: 80%
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 30%; /* Left should be equal to the width of the sidebar when it's expanded */
+    transition: left 0.3s ease-in-out; /* Smooth transition for the map view */
+
 }
+
 #chart {
     position: absolute;
     height: 300px;
@@ -16,23 +24,39 @@ body {
 #collapse-button {
     display: block;
     margin-left: auto;
+    border: none !important; /* Remove border */
+    box-shadow: none !important; /* Remove box-shadow if present */
 }
 
 .flex-shrink-0.p-3 {
+    height: 100%;
     width: 30%;
     transition: transform 0.3s ease-in-out;
     transform: translateX(0);
 }
 
-
-.flex-shrink-0.p-3.closed {
-    transform: translateX(-100%);
+#viewDiv.full {
+    left: 0; /* When the sidebar is closed, the map view takes the full width */
+    width:100%
 }
 
-#viewDiv {
-    width: 70%;
-    position: absolute; /* Position the map view relative to the body */
-    top: 0;
-    right: 0;
-    bottom: 0;
+.collapse-button-external {
+    position: fixed;
+    left: 10px; 
+    top: 13%;
+    transform: translateY(-50%);
+    z-index: 1000;
+    display: none;
+    border: none !important; /* Remove border */
+    box-shadow: none !important; /* Remove box-shadow if present */
+}
+
+.closed {
+    width: 0;
+    overflow: hidden;
+}
+
+
+.full {
+    width: 100%;
 }
