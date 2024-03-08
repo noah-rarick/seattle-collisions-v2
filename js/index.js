@@ -92,8 +92,37 @@ require([
             let legend = new Legend({
                 view: view
             });
+
+            //legend for mobile view
+            let mobileLegend = new Legend({
+                view: view,
+                container: "mobileLegend"
+            })
             
             view.ui.add(legend, "bottom-right");
+
+            let mobile = window.matchMedia("(max-width: 600px)");
+
+            //hides/shows buttons and legend when mobile view is toggled
+            function checkMobile(mobile) {
+                let buttonExternal = document.getElementById("collapse-button-external");
+                if (mobile.matches) {
+                    mobileLegend.visible = true;
+                    legend.visible = false;
+                    buttonExternal.style.display = "none";
+                    view.zoom = 10;
+                } else {
+                    mobileLegend.visible = false;
+                    legend.visible = true;
+                    buttonExternal.style.display = sidebar.classList.contains('closed') ? "block" : "none";
+                }
+            }
+
+            checkMobile(mobile);
+
+            mobile.addEventListener("change", function() {
+                checkMobile(mobile);
+            });
 
             //as the scale changes, update the chart viz
             view.watch("scale", debounce((scale) => {

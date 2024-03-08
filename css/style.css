@@ -6,7 +6,7 @@
     right: 0;
     bottom: 0;
     left: 30%; /* Left should be equal to the width of the sidebar when it's expanded */
-    transition: left 0.3s ease-in-out; /* Smooth transition for the map view */
+    /*transition: left 0.3s ease-in-out; /* Smooth transition for the map view */
 
 }
 
@@ -59,4 +59,64 @@ body {
 
 .full {
     width: 100%;
+}
+
+/*@media screen and (max-width: 600px) {
+    
+
+    .flex-shrink-0.p-3 {
+        width: 100%;
+        bottom: 0;
+        position: relative;
+    }
+
+    #viewDiv {
+        height: 40%;
+        width: 100%;
+        left: 0;
+        top: 40px;
+    }
+}
+#viewDiv {
+    width: 70%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 30%; /* Left should be equal to the width of the sidebar when it's expanded */
+    /*transition: left 0.3s ease-in-out; /* Smooth transition for the map view */
+/*}
+
+.flex-shrink-0.p-3 {
+    height: auto; 
+    width: 30%;
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(0);
+}*/
+
+
+@media screen and (max-width: 600px) {
+    .flex-shrink-0.p-3 {
+        height: auto;
+        width: 100%;
+        position: absolute; /* Ensure stacking */
+        transform: none; /* Remove translation */
+        margin-top: 20px; /* Adjust spacing between the two divs */
+        top:50%;
+    }
+
+    #viewDiv {
+        position: fixed;
+        height: auto; /* Allow content to determine height */
+        width: 100%;
+        bottom: 50%;
+        left: 0;
+    }
+
+    #collapse-button {
+        display: none;
+    }
+
+    
 }
