@@ -11,7 +11,7 @@ Our project idea of creating a smart dashboard to explore the connection between
 >The dashboard can serve as a powerful tool for data-driven decision-making. By analyzing the correlation between traffic collisions and other factors, city planners can make informed decisions on where to implement safety measures such as speed bumps, traffic lights, or enhanced signage. Furthermore, this analysis can guide infrastructure improvements, like road widening or the creation of pedestrian zones, to enhance overall traffic safety and efficiency.
 
 ### Real-Time Updates and Predictive Analytics
->Incorporating real-time data feeds into the dashboard can provide users with up-to-date information on traffic conditions and collision occurrences. This feature is particularly useful for emergency response teams and daily commuters. Additionally, integrating predictive analytics can forecast potential collision hotspots based on historical data and current trends. This foresight can be instrumental in preemptive measures to reduce traffic collisions.
+>Incorporating real-time data feeds into the dashboard can provide users with up-to-date information on traffic conditions and collision occurrences. The real-time updated database ensures that users can obtain the latest information in a timely manner. Additionally, integrating predictive analytics can forecast potential collision hotspots based on historical data and current trends. This foresight can be instrumental in preemptive measures to reduce traffic collisions.
 
 **Here is our project's visualization:**
 [Interactive Map](https://noah-rarick.github.io/seattle-collisions-v2/)
