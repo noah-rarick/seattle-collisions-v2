@@ -1,7 +1,7 @@
 #viewDiv {
     width: 70%;
     height: 100%;
-    position: absolute;
+    position: fixed;
     top: 0;
     right: 0;
     bottom: 0;
@@ -61,41 +61,6 @@ body {
     width: 100%;
 }
 
-/*@media screen and (max-width: 600px) {
-    
-
-    .flex-shrink-0.p-3 {
-        width: 100%;
-        bottom: 0;
-        position: relative;
-    }
-
-    #viewDiv {
-        height: 40%;
-        width: 100%;
-        left: 0;
-        top: 40px;
-    }
-}
-#viewDiv {
-    width: 70%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 30%; /* Left should be equal to the width of the sidebar when it's expanded */
-    /*transition: left 0.3s ease-in-out; /* Smooth transition for the map view */
-/*}
-
-.flex-shrink-0.p-3 {
-    height: auto; 
-    width: 30%;
-    transition: transform 0.3s ease-in-out;
-    transform: translateX(0);
-}*/
-
-
 @media screen and (max-width: 600px) {
     .flex-shrink-0.p-3 {
         height: auto;
@@ -116,7 +81,5 @@ body {
 
     #collapse-button {
         display: none;
-    }
-
-    
+    }   
 }
