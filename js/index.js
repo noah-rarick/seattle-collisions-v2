@@ -19,6 +19,8 @@ require([
         map: map,
         zoom: 11, // Sets zoom level based on scale
         center: [-122.3321, 47.6562], // Sets the center point of view in longitude,latitude
+        minScale: 0,
+        maxScale: 80000,
         constraints: {
             minScale: 1155582,
             snapToZoom: false
