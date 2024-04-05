@@ -21,26 +21,27 @@
         <div class="d-flex align-items-center pb-3 mb-3 link-body-emphasis text-decoration-none border-bottom">
           <svg class="bi pe-none me-2" width="30" height="24"><use xlink:href="#bootstrap"></use></svg>
           <span class="fs-5 fw-semibold">Seattle Collision Dashboard</span>
-          <!-- <button id="collapse-button">
+          <button id="collapse-button">
             <box-icon name='collapse-horizontal' ></box-icon>
-          </button> -->
+          </button>
         </div>
+        <div id="mobileLegend"></div>
         <ul class="list-unstyled ps-0">
           <li class="mb-1">
-            <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed" data-bs-toggle="collapse" data-bs-target="#dashboard-collapse" aria-expanded="false">
-              Collision KPIs<box-icon type='solid' name='chevron-down'></box-icon>
+            <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0" data-bs-toggle="collapse" data-bs-target="#dashboard-collapse" aria-expanded="true">
+              Collision Total<box-icon type='solid' name='chevron-down'></box-icon>
             </button>
-            <div class="collapse" id="dashboard-collapse">
+            <div class="show" id="dashboard-collapse">
               <div id="collision-kpi" class="d-flex justify-content-center align-items-center" style="height: 60px;">
                 <span id="collision-count" class="fs-5 fw-semibold"></span>
               </div>
             </div>
           </li>
           <li class="mb-1">
-            <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rate" data-bs-toggle="collapse" data-bs-target="#rate-collapse" aria-expanded="false">
+            <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0" data-bs-toggle="collapse" data-bs-target="#rate-collapse" aria-expanded="true">
               Injury Rate<box-icon type='solid' name='chevron-down'></box-icon>
             </button>
-            <div class="collapse" id="rate-collapse">
+            <div class="show" id="rate-collapse"> 
               <div id="rate-chart">
                 <h3><span id="collision-count"></span></h3>
               </div>
@@ -59,21 +60,53 @@
         
           <li class="border-top my-3"></li>
           <li class="mb-1">
-            <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed" data-bs-toggle="collapse" data-bs-target="#account-collapse" aria-expanded="false">
-              Account
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#infoModal">
+              Information
             </button>
-            <div class="collapse" id="account-collapse">
-              <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-                <li><a href="#" class="link-body-emphasis d-inline-flex text-decoration-none rounded">New...</a></li>
-                <li><a href="#" class="link-body-emphasis d-inline-flex text-decoration-none rounded">Profile</a></li>
-                <li><a href="#" class="link-body-emphasis d-inline-flex text-decoration-none rounded">Settings</a></li>
-                <li><a href="#" class="link-body-emphasis d-inline-flex text-decoration-none rounded">Sign out</a></li>
-              </ul>
-            </div>
           </li>
         </ul>
       </div>
+      
+      <button id="collapse-button-external" class="collapse-button-external" style="display: none;">
+          <box-icon name='collapse-horizontal'></box-icon>
+      </button>
+      
+      <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <strong class="modal-title" id="exampleModalLongTitle">Dashboard Information</strong>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              This collision dashboard shows traffic collisions within Seattle between 2003 and 2024.<br><br>
 
+              The data was sourced from the Seattle <a href="https://data-seattlecitygis.opendata.arcgis.com/datasets/504838adcb124cf4a434e33bf420c4ad_0/explore">All Collisions</a> dataset on Seattle GeoData.<br><br>
+
+              This data contains three layers. As you zoom, these three layers will reveal themselves and hide themselves based on the zoom level.<br><br>
+
+              <h6>Heatmap</h6>
+              The heatmap shows the density of collisions within Seattle. The heatmap is static at further zoom levels to preserve visual patterns. As you zoom closer, the heatmap will change dynamically.<br><br>
+
+              <h6>Binning Layer</h6>
+              Binning refers to the intersection sized boxes that appear at high zoom levels. These boxes are color coded based on the number of collisions within each box. The color coding is based on the number of injuries within each box. When clicked, these boxes will show aggregated statistics about the collisions in the box.<br><br>
+
+              <h6>Point Layer</h6>
+              The point layer shows the location of each collision. The size and color of each point is based on the number of injuries within each collision. When clicked, each point will show more information on the collision including injuries, report numbers, date, and more. At the bottom of each popup is a Google Maps link, where you will be able to visualize the location of the collision.<br><br>
+
+              <h6>Analytics</h6>
+              The dashboard on the left shows three analytics that are all updated as the map moves.<br><br>
+              <b>Collision Total:</b> The total number of collisions within the current map view.<br><br>
+              <b>Injury Rate:</b> The percentage of collisions that resulted in injuries within the current map view.<br><br>
+              <b>Collisions</b> by Injury Counts: A bar chart showing the number of collisions based on the number of injuries within the current map view. Click on injury categories to filter them out.
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
     <div id="viewDiv"></div>
     <script src="js/index.js"></script>
 </body>

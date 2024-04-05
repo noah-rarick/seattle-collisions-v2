@@ -29,8 +29,9 @@ require([
 
     const collisions = new FeatureLayer({
         url: "https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/SDOT_Collisions_All_Years/FeatureServer/0",
-        outFields: ["REPORTNO", "LOCATION", "INJURIES", "SERIOUSINJURIES", "PEDCOUNT", "VEHCOUNT", "FATALITIES", "INATTENTIONIND", "UNDERINFL"],
+        outFields: ["REPORTNO", "INCDATE", "LOCATION", "INJURIES", "SERIOUSINJURIES", "PEDCOUNT", "VEHCOUNT", "FATALITIES", "INATTENTIONIND", "UNDERINFL"],
         definitionExpression: "1=1", // Adjust this to limit data based on the most common queries
+        minScale: 0,
         popupTemplate: {
             title: "Collision Report #: {REPORTNO}",
             content: function(feature) {
@@ -94,8 +95,37 @@ require([
             let legend = new Legend({
                 view: view
             });
+
+            //legend for mobile view
+            let mobileLegend = new Legend({
+                view: view,
+                container: "mobileLegend"
+            })
             
             view.ui.add(legend, "bottom-right");
+
+            let mobile = window.matchMedia("(max-width: 600px)");
+
+            //hides/shows buttons and legend when mobile view is toggled
+            function checkMobile(mobile) {
+                let buttonExternal = document.getElementById("collapse-button-external");
+                if (mobile.matches) {
+                    mobileLegend.visible = true;
+                    legend.visible = false;
+                    buttonExternal.style.display = "none";
+                    view.zoom = 10;
+                } else {
+                    mobileLegend.visible = false;
+                    legend.visible = true;
+                    buttonExternal.style.display = sidebar.classList.contains('closed') ? "block" : "none";
+                }
+            }
+
+            checkMobile(mobile);
+
+            mobile.addEventListener("change", function() {
+                checkMobile(mobile);
+            });
 
             //as the scale changes, update the chart viz
             view.watch("scale", debounce((scale) => {
@@ -221,75 +251,6 @@ require([
                 });
             };
             
-
-            // const updateChart = function() {
-            //     // Perform individual queries for each injury count category
-            //     let injuryCategories = [1, 2, 3, 4, 5, 6, 7, 8, "9+"]; // Ensure this reflects your actual categories
-            //     let queries = injuryCategories.map(injuryCount => {
-            //         let query = collisions.createQuery();
-            //         query.returnGeometry = false;
-            //         query.geometry = view.extent;
-            //         if (injuryCount === "9+") {
-            //             query.where = "INJURIES >= 9"; // Adjust for actual field and value
-            //         } else {
-            //             query.where = `INJURIES = ${injuryCount}`; // Adjust for actual field and value
-            //         }
-            //         return collisions.queryFeatureCount(query);
-            //     });
-
-            //     // Wait for all queries to complete
-            //     Promise.all(queries).then(results => {
-            //         const chartData = ["Injuries"].concat(results); // Prepend label
-            //         console.log("1");
-
-            //         const chart = c3.generate({
-            //             bindto: "#chart",
-            //             data: {
-            //                 columns: [
-            //                     chartData
-            //                 ],
-            //                 type: "bar"
-            //             },
-            //             colors: {
-            //                 pattern: [
-            //                     "#ff2638ff", // Original color 1
-            //                     "#d31c33ff", // Between color 1 and 2
-            //                     "#a6242eff", // Original color 2
-            //                     "#812833ff", // Between color 2 and 3
-            //                     "#403031ff", // Original color 3
-            //                     "#36577dff", // Between color 3 and 4
-            //                     "#2e6ca4ff", // Original color 4
-            //                     "#2480c7ff", // Between color 4 and 5
-            //                     "#1993ffff"  // Original color 5
-            //                 ]
-            //             },
-            //             axis: {
-            //                 x: {
-            //                     type: "category",
-            //                     categories: injuryCategories.map(category => `${category}`), // Label categories
-            //                     label: {
-            //                         text:"Number of Injuries",
-            //                         position: "outer-center"
-            //                     }
-            //                 },
-            //                 y: {
-            //                     label: { // Add label configuration here
-            //                         text: 'Number of Collisions',
-            //                         position: 'outer-middle'
-            //                     }
-            //                 }
-            //             }
-            //         });
-            //     });
-            // };
-
-            // Apply debounce to the updateChart function
-            // const debouncedUpdateChart = debounce(updateChart, 400); // Adjust the delay as needed
-            // const debouncedGaugeChart = debounce(updateGaugeChart, 400);
-            // const debouncedScaleUpdate = debounce(scaleUpdate, 100);
-
-            // as the extent changes, update the chart with debounce
-            //initalize the chart upon load
             updateChart();
             updateGaugeChart();
         });
@@ -332,12 +293,14 @@ require([
         function scaleUpdate(scale) {
             console.log(scale);
             if (scale > 60000) {
+                console.log("above 60,000");
                 layer.popupEnabled = false;
                 //above 60000 zoom -- keep heatmap static
                 layer.featureReduction = null; //nullify feature reduction
                 heatmapRenderer.referenceScale = 46000; // Apply static aspect at this scale
                 collisions.renderer = heatmapRenderer; // Apply updated renderer
             } else if (10000 < scale && scale < 60000) {
+                console.log("below 60,000");
                 collisions.popupEnabled = false;
                 //between 60000 and 10000 zoom -- keep heatmap dynamic
                 layer.featureReduction = null; //nullify feature reduction
@@ -513,6 +476,28 @@ require([
         // var sidebar = document.getElementById('sidebar');
         var sidebar = document.querySelector('.flex-shrink-0.p-3');
         var button = document.getElementById("collapse-button");
-
+        var sidebar = document.querySelector('.flex-shrink-0.p-3');
+        var mapViewDiv = document.getElementById("viewDiv");
+        var button = document.getElementById("collapse-button"); 
+        var buttonExternal = document.getElementById("collapse-button-external"); 
+ 
+        
+        function toggleSidebar() {
+            sidebar.classList.toggle('closed');
+            mapViewDiv.classList.toggle('full');
+            
+            buttonExternal.style.display = sidebar.classList.contains('closed') ? "block" : "none";
+        }
+ 
+       
+        button.addEventListener('click', toggleSidebar);
+ 
+        
+        buttonExternal.addEventListener('click', function() {
+            sidebar.classList.remove('closed');
+            mapViewDiv.classList.remove('full');
+            this.style.display = "none"; 
+        });
+        
     });
 })
