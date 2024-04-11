@@ -82,7 +82,8 @@ require([
     const layer = collisions;
     //Promise that resolves when the view is ready
     view.when().then(() => {
-
+        var infoModal = new bootstrap.Modal(document.getElementById('infoModal'), {});
+        infoModal.show();
         // Function to update collision data based on current view extent
         view.whenLayerView(collisions).then(function(layerView) {
 
@@ -498,6 +499,8 @@ require([
             mapViewDiv.classList.remove('full');
             this.style.display = "none"; 
         });
+
+        
         
     });
 })
